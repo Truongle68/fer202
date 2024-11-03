@@ -16,7 +16,7 @@ const updateStudent = (id, studentData) => {
   return axios.put(`/studentManagement/${id}`, studentData)
 }
 
-const deleteStudent = (id, studentData) => {
+const deleteStudent = (id) => {
   return axios.delete(`/studentManagement/${id}`)
 }
 

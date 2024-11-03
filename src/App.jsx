@@ -7,19 +7,22 @@ import AddStudent from "./components/AddForm";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import DetailPage from "./components/Detail";
-import FullDetailPage from "./components/FullDetail";
+import UpdateForm from "./components/UpdateForm";
+import NavbarHeader from "./components/Navbar";
+// import FullDetailPage from "./components/FullDetail";
 
 
 const App = () => {
   return(
     <Router>
-      
+      <NavbarHeader/>
       <Routes>
         <Route path="/" element={<Home/>} />
-        <Route path="/detail" element={<FullDetailPage/>} />
+        {/* <Route path="/detail" element={<FullDetailPage/>} /> */}
         <Route path="/detail/:id" element={<DetailPage/>} />
         <Route path="/dashboard" element={<DashBoard/>} />
         <Route path="/addform" element={<AddStudent/>} />
+        <Route path="/updateform/:id" element={<UpdateForm/>} />
       </Routes>
      <ToastContainer/>
     </Router>

@@ -28,10 +28,10 @@
   margin-top: 50px;
 }
 .white-board{
-  max-width: 85%;
+  max-width: 95%;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: auto auto auto;
+  grid-template-columns: auto auto auto auto;
   align-items: center;
   margin-top: 20px;
 
@@ -62,7 +62,6 @@
 }
 /* Detail page */
 .detail-container{
-  
   
   .content-container{
     display: flex;

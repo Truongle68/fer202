@@ -1,12 +1,12 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Form, Button, Alert } from 'react-bootstrap'
-import { postNewStudent } from '../services/studentService'
-import {toast} from 'react-toastify'
+import React, { useEffect, useState } from 'react'
+import {  useNavigate, useParams } from 'react-router-dom'
+import { toast } from 'react-toastify'
+import { getStudentById, updateStudent } from '../services/studentService'
+import { Form, Alert, Button } from 'react-bootstrap'
+import { formatDateForInput } from '../services/config'
 import isURL from 'validator/lib/isURL'
 
-const AddStudent = () => {
-  
+const UpdateForm = () => {
   const [name, setName] = useState('')
   const [image, setImage] = useState('')
   const [gender, setGender] = useState(true)
@@ -16,11 +16,31 @@ const AddStudent = () => {
   const [error, setError] = useState('')
   const navigate = useNavigate()
 
+  const { id } = useParams()
 
-  const handleSubmit = async(e) => {
+  const getStudent = async () => {
+    try {
+      const { data: fetchedStudent } = await getStudentById(id)
+      if (fetchedStudent) {
+        setName(fetchedStudent.name || "")
+        setDateOfBirth(formatDateForInput(fetchedStudent.dateofbirth) || "")
+        setGender(fetchedStudent.gender)
+        setClas(fetchedStudent.class || "")
+        setImage(fetchedStudent.image || "")
+        setFeedback(fetchedStudent.feedback || "")
+      }
+    } catch (error) {
+      console.error("Error fetching student data:", error)
+    }
+  }
+
+  useEffect(() => {
+    getStudent()
+  }, [id])
+
+  const handleUpdateStudent = async (e) => {
     e.preventDefault()
 
-    // Validate fields
     if (name.trim().split(/\s+/).length < 2) {
       setError('Name must contain more than 2 words!')
       return
@@ -29,32 +49,33 @@ const AddStudent = () => {
       setError('Image must be a valid URL!')
       return
     }
-    const studentData = { 
-      name, 
-      dateofbirth: dateOfBirth, 
-      gender,
-      class: clas, 
-      image, 
-      feedback 
-    }
+
+    const studentData = {
+      id: id,
+      name: name,
+      dateofbirth: dateOfBirth,
+      gender: gender,
+      class: clas,
+      image: image,
+      feedback: feedback,
+    };
+
     try {
-      const {data} = await postNewStudent(studentData);
+      const {data} = await updateStudent(id, studentData);
       if(data){
-        toast.success('Add new successfully!')
+        toast.success('update successfully!')
         navigate('/dashboard')
       }
     } catch (error) {
-      toast.error('Fail to add new student!')
-      console.error(error.error)
+      console.error('Error updating student:', error);
     }
-    
-  }
+  };
 
   return (
     <div className="container" style={{width: "50%"}}>
       <h2>Add Student</h2>
       {error && <Alert variant="danger">{error}</Alert>}
-      <Form onSubmit={handleSubmit}>
+      <Form onSubmit={handleUpdateStudent}>
         <Form.Group className="mb-3" controlId="formName">
           <Form.Label>Name</Form.Label>
           <Form.Control
@@ -78,25 +99,16 @@ const AddStudent = () => {
         </Form.Group> 
         
 
-        <Form.Group className="mb-3" controlId="formGender">
-          <Form.Label>Gender</Form.Label>
-          <Form.Check
-            type="radio"
-            label="Male"
-            name="gender"
-            value={true}
-            checked={gender === true}
-            onChange={() => setGender(true)}
-          />     
-          <Form.Check
-            type="radio"
-            label="Female"
-            name="gender"
-            value={false}
-            checked={gender === false}
-            onChange={() => setGender(false)}
-          />
-        </Form.Group>
+        <Form.Group className="mb-3">
+            <Form.Label>Gender</Form.Label>
+            <Form.Select
+              value={gender}
+              onChange={(event) => setGender(event.target.value)}
+            >
+              <option value={true}>Male</option>
+              <option value={false}>Female</option>
+            </Form.Select>
+          </Form.Group>
 
         <Form.Group className="mb-3" controlId="formName">
           <Form.Label>Class</Form.Label>
@@ -133,11 +145,12 @@ const AddStudent = () => {
         </Form.Group>
 
         <Button variant="primary" type="submit">
-          Add Student
+          Update Student
         </Button>
       </Form>
     </div>
+  
   )
 }
 
-export default AddStudent
+export default UpdateForm

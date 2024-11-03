@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getStudentById } from '../services/studentService';
 import { Button, Container } from 'react-bootstrap';
+import { formatDate } from '../services/config';
 
 const DetailPage = () => {
   
@@ -11,9 +12,9 @@ const DetailPage = () => {
 
   const getStudent = async() => {
     try {
-      const res = await getStudentById(id)
-      if(res && res.data){
-        setStudent(res.data)
+      const {data} = await getStudentById(id)
+      if(data){
+        setStudent(data)
       }
     } catch (error) {
       console.error(error.error)
@@ -35,8 +36,9 @@ const DetailPage = () => {
                         <img src={student.image} />
                     </div>
                     <div className="detail-content">
+                        <label>Id: {student.id}</label>
                         <label>Name: {student.name}</label>
-                        <label>Date of birth: {student.dateofbirth}</label>
+                        <label>Date of birth: {formatDate(student.dateofbirth)}</label>
                         <label>Gender: {`${student.gender}` === "true" ? "male" : "female"}</label>
                         <label>Class: {student.class}</label>
                         <label>Feedback: {student.feedback}</label>

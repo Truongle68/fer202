@@ -1,63 +1,43 @@
 import React, { useEffect, useState } from "react";
 import { getAllStudent } from "../services/studentService";
 import { useNavigate } from "react-router-dom";
-import NavbarHeader from "./Navbar";
 import { Container } from "react-bootstrap";
 import Button from 'react-bootstrap/Button';
-import ModalUpdate from "./ModalUpdate";
-import ModalDelete from "./ModalDelete";
+import { formatDate } from "../services/config";
+import { deleteStudent } from "../services/studentService";
+import { toast } from "react-toastify";
 
 
 const DashBoard = () => {
   const [listStudent, setListStudent] = useState([]);
-  const [isShowEditModal, setIsShowEditModal] = useState(false);
-  const [isShowDeleteModal, setIsShowDeleteModal] = useState(false);
-  const [studentData, setStudentData] = useState({});
-  const [updateStudentData, setUpdateStudentData] = useState({});
-
-
   const navigate = useNavigate()
 
   const getStudents = async () => {
-    await getAllStudent()
-      .then((res) => {
-        setListStudent(res.data);
-      })
-      .catch((e) => {
-        console.error(e.error);
-      });
+    try {
+      const {data} = await getAllStudent()
+      if(data){
+        setListStudent(data)
+      }
+    } catch (error) {
+      console.error({message: error.message})
+    }
   };
 
-  const handleClose = () => {
-    setIsShowEditModal(false);
-    setIsShowDeleteModal(false);
-  };
-
- 
-  const handleEditStudent = (data) => {
-    setIsShowEditModal(true);
-    setUpdateStudentData(data);
-  };
-
-  const handleDeleteStudent = (data) => {
-    setStudentData('');
-    setIsShowDeleteModal(true);
-    setStudentData(data);
-  };
-
-  const handleStudentUpdated = (updatedStudent) => {
-
-    setListStudent((prevStudents) =>
-      prevStudents.map((student) =>
-        student.id === updatedStudent.id ? updatedStudent : student
-      )
-    );
-  };
-
-  const handleStudentDeleted = (deletedStudentId) => {
-    setListStudent((prevStudents) =>
-      prevStudents.filter((student) => student.id !== deletedStudentId)
-    );
+  const handleDeleteStudent = async(studentId) => {
+    try {
+      if(window.confirm("Are you sure deleting this item?")){
+        const {data} = await deleteStudent(studentId)
+        if(data){
+          toast.success('Delete successfully!')
+          setListStudent(prevList => prevList.filter(student => student.id != studentId))
+          navigate('/dashboard')
+        }else{
+          toast.error('Fail to delete!')
+        }
+      }
+    } catch (error) {
+      console.error({message: error.message})
+    }
   };
 
   useEffect(() => {
@@ -66,13 +46,12 @@ const DashBoard = () => {
 
   return (
     <>
-      <NavbarHeader />
       <Container>
         <div className="body-header">
           <h2>STUDENT MANAGEMENT</h2>
           <Button
             className="add-btn"
-            variant="warning"
+            variant="success"
             onClick={() => navigate('/addform')}
           >
             Add New Student
@@ -100,36 +79,21 @@ const DashBoard = () => {
                   <tr key={student.id}>
                     <td>{student.id}</td>
                     <td>{student.name}</td>
-                    <td>{student.dateofbirth}</td>
+                    <td>{formatDate(student.dateofbirth)}</td>
                     <td>{`${student.gender}` === "true" ? "male" : "female"}</td>
                     <td>{student.class}</td>
                     <td><img src={student.image} alt='student' style={{ width: '100%' }} /></td>
                     <td>{student.feedback}</td>
                     <td>
                       <Button className="action-btn" variant="outline-primary" onClick={() => navigate(`/detail/${student.id}`)}>Detail</Button>
-                      <Button className="action-btn" variant="outline-success" onClick={() => { handleEditStudent(student) }}>Edit</Button>
-                      <Button className="action-btn" variant="outline-danger" onClick={() => { handleDeleteStudent(student) }}>Delete</Button>
+                      <Button className="action-btn" variant="outline-success" onClick={() => { navigate(`/updateform/${student.id}`) }}>Edit</Button>
+                      <Button className="action-btn" variant="outline-danger" onClick={() => { handleDeleteStudent(student.id) }}>Delete</Button>
                     </td>
                   </tr>
                 )
               })}
           </tbody>
         </table>
-
-
-        <ModalUpdate
-          show={isShowEditModal}
-          handleClose={handleClose}
-          updateStudentData={updateStudentData}
-          onStudentUpdated={handleStudentUpdated}
-        />
-
-        <ModalDelete
-          show={isShowDeleteModal}
-          handleClose={handleClose}
-          studentData={studentData}
-          onStudentDeleted={handleStudentDeleted}
-        />
       </Container>
     </>
   );
